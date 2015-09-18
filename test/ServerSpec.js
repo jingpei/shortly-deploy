@@ -2,6 +2,8 @@ var request = require('supertest');
 var express = require('express');
 var expect = require('chai').expect;
 var app = require('../server-config.js');
+var bcrypt = require('bcrypt-nodejs');
+var crypto = require('crypto');
 
 var db = require('../app/config');
 var User = require('../app/models/user');
@@ -10,10 +12,12 @@ var Link = require('../app/models/link');
 /////////////////////////////////////////////////////
 // NOTE: these tests are designed for mongo!
 /////////////////////////////////////////////////////
-
-var User = require('../app/models/user');
-var Link = require('../app/models/link');
-('', function() {
+var mongo = require('../app/mongo.js');
+var User = mongo.User;
+var Link = mongo.Link;
+// var User = require('../app/models/user');
+// var Link = require('../app/models/link');
+describe('', function() {
 
   beforeEach(function(done) {
     // Log out currently signed in user
@@ -93,10 +97,13 @@ var Link = require('../app/models/link');
     describe('With previously saved urls: ', function() {
 
       beforeEach(function(done) {
+        var shasum = crypto.createHash('sha1');
+        shasum.update('http://www.roflzoo.com/');
         link = new Link({
           url: 'http://www.roflzoo.com/',
           title: 'Funny pictures of animals, funny dog pictures',
           base_url: 'http://127.0.0.1:4568',
+          code: shasum.digest('hex').slice(0, 5),
           visits: 0
         })
 
@@ -212,7 +219,7 @@ var Link = require('../app/models/link');
     beforeEach(function(done) {
       new User({
           'username': 'Phillip',
-          'password': 'Phillip'
+          'password': bcrypt.hashSync('Phillip')
       }).save(function() {
         done();
       });
